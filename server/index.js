@@ -33,7 +33,21 @@ io.on("connection", (socket) => {
         socket.to(roomCode).emit("start_game");
     })
 
-    // Users joining games
+    socket.on('send_round_one_questions', (playerQuestionsArray) => {
+        console.log(`Sending Round One Questions with data: ${playerQuestionsArray}`);
+        playerQuestionsArray.forEach((playerQuestion) => {
+            const targetSocket = playerQuestion.player.name;
+            socket.to(targetSocket).emit('round_one_questions', playerQuestion.questions);
+            console.log(`Sent question to ${targetSocket}`);
+        })
+    });
+
+    socket.on("submit_response", (data) => {
+        console.log(`SUBMIT_RESPONSE  ${data.room}`);
+        socket.to(data.room).emit("receive_response", data);
+    })
+
+    // Users joining games. Users join room by themselves
     socket.on("join_room", (data) => {
         const room = rooms.find(room => room.roomCode === data.room);
         if (!room) {
@@ -42,13 +56,21 @@ io.on("connection", (socket) => {
             return;
         }
         room.users.push(data.username);
-        socket.join(data.room);
+        socket.join(data.username);
         socket.to(data.room).emit("user_joined", data);
         data.VIP = isVIP;
         socket.emit("join_successful", data);
         isVIP = false;
         console.log(`${data.username} joined room ${data.room}`)
+
+        console.log(socket.rooms);
     });
+
+    // Allow Game to send personalised information to user
+    socket.on("join_specific_room", (name) => {
+        socket.join(name);
+        console.log("rooms for socket:", socket.rooms);
+    })
 
     // Test
     socket.on("send_message", (data) => {
