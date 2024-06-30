@@ -47,6 +47,15 @@ io.on("connection", (socket) => {
         socket.to(data.room).emit("receive_response", data);
     })
 
+    socket.on("begin_voting", (data) => {
+        console.log(`BEGIN VOTING: ${data.game.question} to players: ${data.players}`);
+        data.players.forEach((player) => {
+            const targetSocket = player.name;
+            socket.to(targetSocket).emit("vote", data);
+            console.log(`Sent responses to ${targetSocket}`);
+        })
+    })
+
     // Users joining games. Users join room by themselves
     socket.on("join_room", (data) => {
         const room = rooms.find(room => room.roomCode === data.room);
