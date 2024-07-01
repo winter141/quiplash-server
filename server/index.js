@@ -47,6 +47,12 @@ io.on("connection", (socket) => {
         socket.to(data.room).emit("receive_response", data);
     })
 
+    socket.on("cast_vote", (data) => {
+        console.log("// CAST VOTE");
+        // Data of Type Vote
+        socket.to(data.room).emit("receive_vote", data);
+    });
+
     socket.on("begin_voting", (data) => {
         console.log(`BEGIN VOTING: ${data.game.question} to players: ${data.players}`);
         data.players.forEach((player) => {
@@ -90,6 +96,5 @@ io.on("connection", (socket) => {
 server.listen(3001, () => {
     console.log("SERVER IS RUNNING");
 })
-
 
 
